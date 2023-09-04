@@ -12,6 +12,7 @@
 5. add reported cases, hospitalizations, online trends
 6. add mortality
 7. add city-specific data, e.g. LA
+8. replace beta with something more real-world, e.g. based on distance-time
 
 # Added:
 1. ~~add time to recovery~~

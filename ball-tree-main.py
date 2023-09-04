@@ -21,9 +21,9 @@ class Agent:
             self.recovers_at = random.randint(100, 200)
 
 class SIRSimulatorUI:
-    def __init__(self, root, total_population=1000, initial_infectious=1, beta=0.25, num_time_steps=1000):
+    def __init__(self, root, total_population=10000, initial_infectious=1, beta=1, num_time_steps=1000, exposure_distance=50):
         self.root = root
-        self.root.title("Agent-Based SIR Model Simulator")
+        self.root.title("Agent-Based SIR Model Simulator - Ball")
         self.canvas = tk.Canvas(root, width=400, height=400, bg='white')
         self.canvas.pack()
         self.social_distancing = tk.BooleanVar()
@@ -37,6 +37,7 @@ class SIRSimulatorUI:
         self.beta = beta
         self.num_time_steps = num_time_steps
         self.current_step = 0
+        self.exposure_distance = exposure_distance
         self.root.after(100, self.run_simulation)
 
     def agent_color(self, agent):
@@ -96,7 +97,7 @@ class SIRSimulatorUI:
 
         # Calculate distances between each pair of agents using a KD-tree
         tree = KDTree(agent_positions)
-        pairs = tree.query_ball_tree(tree, r=10)  # Find pairs of agents within distance 10
+        pairs = tree.query_ball_tree(tree, r=self.exposure_distance)  # Find pairs of agents within distance 10
         for i, pair in enumerate(pairs):
             for j in pair:
                 if i<j and infectious_agents[i] and susceptible_agents[j] and random.random() < self.beta:
