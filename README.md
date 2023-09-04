@@ -6,6 +6,9 @@
 
 # Roadmap:
 1. population density
-2. add time to recovery
-3. add "sociability" to adjust motion - reduce motion once infected
-4. add r0/adjust beta/gamma for real-world disease, e.g. covid
+2. add "sociability" to adjust motion - reduce motion once infected
+3. add r0/adjust beta/gamma for real-world disease, e.g. covid
+4. color map of dot to show stage of infection
+
+# Added:
+1. ~~add time to recovery~~

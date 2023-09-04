@@ -1,17 +1,25 @@
 import tkinter as tk
 import random
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 # Agent - an individual "person" in the simulation
 class Agent:
     def __init__(self, status):
         self.status = status  # 'S' for Susceptible, 'I' for Infectious, 'R' for Recovered
+        self.sociability = random.random()  # A number between 0 and 1 representing how sociable the agent is
+        
+        if status == 'I':
+            self.recovers_at = random.randint(100, 200)  # The time step at which the agent will recover
+        else:
+            self.recovers_at = 0
 
         # Randomly initialize the position of the agent
         self.x = random.randint(0, 400) 
         self.y = random.randint(0, 400)
 
 class SIRSimulatorUI:
-    def __init__(self, root, total_population=1000, initial_infectious=1, beta=0.25, gamma=0.0005, num_time_steps=1000):
+    def __init__(self, root, total_population=1000, initial_infectious=1, beta=0.25, num_time_steps=1000):
         self.root = root
         self.root.title("Agent-Based SIR Model Simulator")
 
@@ -27,13 +35,33 @@ class SIRSimulatorUI:
         # Create agents and define their initial status
         self.agents = [Agent('I') if i < initial_infectious else Agent('S') for i in range(total_population)]
 
+
         # Define the parameters of the simulation
         self.beta = beta # Probability of infection
-        self.gamma = gamma # Probability of recovery
         self.num_time_steps = num_time_steps # Number of time steps to run the simulation for
 
         self.current_step = 0
         self.root.after(100, self.run_simulation)
+
+    def agent_color(self, agent):
+        if agent.status == 'S':
+            return 'blue'
+        elif agent.status == 'I':
+            stage = self.current_step/agent.recovers_at
+            if (stage) < 0.2:
+                colormap = cm.get_cmap("RdYlBu")
+                color_interval = (1-stage)/0.2
+            else: 
+                colormap = cm.get_cmap("RdYlGn")
+                if stage < 0.8:
+                    color_interval = (stage-0.2)/0.6
+                else: color_interval = stage
+            rgba = colormap(color_interval)
+            rgb = rgba[:3]
+            rgb = [int(255 * x) for x in rgb]
+            return '#%02x%02x%02x' % tuple(rgb)  # Unpack the list into individual arguments
+        else:
+            return 'green'
 
     def update_ui(self):
         self.canvas.delete("all")
@@ -45,7 +73,7 @@ class SIRSimulatorUI:
         
         for agent in self.agents:
             # Draw the agents on the canvas
-            color = 'blue' if agent.status == 'S' else 'red' if agent.status == 'I' else 'green'
+            color = self.agent_color(agent)
             self.canvas.create_oval(agent.x, agent.y, agent.x+5, agent.y+5, fill=color)
             
             if agent.status == 'S':
@@ -84,9 +112,10 @@ class SIRSimulatorUI:
                         if distance < 10:  
                             if random.random() < self.beta: # Randomly infect the susceptible agent
                                 other_agent.status = 'I'
+                                other_agent.recovers_at = self.current_step + random.randint(100, 200) # Set the time to recovery to a random number between 100 and 200
 
-                # Randomly recover the agent
-                if random.random() < self.gamma: 
+                # Recover the agent after the specified number of time steps
+                if agent.recovers_at <= self.current_step: 
                     agent.status = 'R'
                 
             # Move the agents randomly, with a smaller movement if social distancing is enabled
