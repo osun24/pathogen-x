@@ -13,6 +13,7 @@
 6. add mortality
 7. add city-specific data, e.g. LA
 8. replace beta with something more real-world, e.g. based on distance-time
+9. show SIR live plot
 
 # Added:
 1. ~~add time to recovery~~
