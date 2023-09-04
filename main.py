@@ -6,10 +6,11 @@ from scipy.spatial import cKDTree
 
 # Agent - an individual "person" in the simulation
 class Agent:
-    def __init__(self, status, x0, y0):
+    def __init__(self, status, x0, y0, sociability=0.5):
         self.status = status
         self.x = x0
         self.y = y0
+        self.sociability = sociability
         if status == 'I':
             self.recovers_at = random.randint(100, 200)
 
@@ -23,7 +24,10 @@ class SIRSimulatorUI:
         self.check_button = tk.Checkbutton(root, text="Social Distancing", variable=self.social_distancing)
         self.check_button.pack()
         self.positions = np.random.randint(0, 400, size=(total_population, 2))
-        self.agents = [Agent('I', self.positions[i][0], self.positions[i][1]) if i < initial_infectious else Agent('S', self.positions[i][0], self.positions[i][1]) for i in range(total_population)]
+        # Generate sociabilities from a normal distribution around 0.5
+        self.sociabilities = np.random.normal(0.5, 0.1, size = total_population)
+        # Create agents with initial status, position, and sociability
+        self.agents = [Agent('I', self.positions[i][0], self.positions[i][1], sociability=self.sociabilities[i]) if i < initial_infectious else Agent('S', self.positions[i][0], self.positions[i][1], sociability=self.sociabilities[i]) for i in range(total_population)]
         self.beta = beta
         self.num_time_steps = num_time_steps
         self.current_step = 0
@@ -33,19 +37,23 @@ class SIRSimulatorUI:
         if agent.status == 'S':
             return 'blue'
         elif agent.status == 'I':
+            # Stage of infection as a percentage of recovery time
             stage = self.current_step/agent.recovers_at
             if (stage) < 0.3:
+                # Set color to range from blue to yellow to red
                 colormap = cm.get_cmap("RdYlBu")
                 color_interval = 1-(stage/0.3)
             else: 
                 colormap = cm.get_cmap("RdYlGn")
+                # Set color to red 
                 if stage < 0.9:
                     color_interval = 0
-                else: color_interval = stage
+                else: 
+                    color_interval = stage #set color to between yellow and green
             rgba = colormap(color_interval)
             rgb = rgba[:3]
             rgb = [int(255 * x) for x in rgb]
-            return '#%02x%02x%02x' % tuple(rgb)  # Unpack the list into individual arguments
+            return '#%02x%02x%02x' % tuple(rgb)  # Unpack the list into individual arguments to convert to HEX
         else:
             return 'green'
 
@@ -82,7 +90,7 @@ class SIRSimulatorUI:
 
         # Calculate distances between each pair of agents using a KD-tree
         tree = cKDTree(agent_positions)
-        pairs = tree.query_pairs(20)  # Find pairs of agents within distance 10
+        pairs = tree.query_pairs(20)  # Find pairs of agents within distance 20
         for i, j in pairs:
             if infectious_agents[i] and susceptible_agents[j]:
                 self.agents[j].status = 'I'
@@ -96,6 +104,8 @@ class SIRSimulatorUI:
         # Adjust movements based on social distancing flag
         max_movement = np.array([1, 1]) if self.social_distancing.get() else np.array([5, 5])
         movement = np.random.randint(-max_movement, max_movement + 1, size=(len(self.agents), 2))
+        sociabilities = np.array(self.sociabilities).reshape(-1, 1) 
+        movement = movement * sociabilities
         self.positions = np.clip(self.positions + movement, 0, 400)
 
         for i, agent in enumerate(self.agents):
