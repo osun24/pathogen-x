@@ -2,6 +2,7 @@ import tkinter as tk
 import random
 import matplotlib.cm as cm
 import numpy as np
+from scipy.spatial import cKDTree
 
 # Agent - an individual "person" in the simulation
 class Agent:
@@ -33,13 +34,13 @@ class SIRSimulatorUI:
             return 'blue'
         elif agent.status == 'I':
             stage = self.current_step/agent.recovers_at
-            if (stage) < 0.2:
+            if (stage) < 0.3:
                 colormap = cm.get_cmap("RdYlBu")
-                color_interval = (1-stage)/0.2
+                color_interval = 1-(stage/0.3)
             else: 
                 colormap = cm.get_cmap("RdYlGn")
-                if stage < 0.8:
-                    color_interval = (stage-0.2)/0.6
+                if stage < 0.9:
+                    color_interval = 0
                 else: color_interval = stage
             rgba = colormap(color_interval)
             rgb = rgba[:3]
@@ -47,8 +48,10 @@ class SIRSimulatorUI:
             return '#%02x%02x%02x' % tuple(rgb)  # Unpack the list into individual arguments
         else:
             return 'green'
-        
+
     def update_ui(self):
+        if self.current_step % 2 != 0:  # Update UI every 10 steps
+            return
         self.canvas.delete("all")
         counts = {'S': 0, 'I': 0, 'R': 0}
         
@@ -72,23 +75,18 @@ class SIRSimulatorUI:
             return
 
         # Convert list of agents to numpy array for efficient computation
-        agent_positions = self.positions
+        agent_positions = np.array([(agent.x, agent.y) for agent in self.agents])
         agent_statuses = np.array([agent.status for agent in self.agents])
         infectious_agents = agent_statuses == 'I'
         susceptible_agents = agent_statuses == 'S'
 
-        # Calculate distances between each pair of agents using numpy's broadcasting feature
-        dx = agent_positions[:, np.newaxis, 0] - agent_positions[np.newaxis, :, 0]
-        dy = agent_positions[:, np.newaxis, 1] - agent_positions[np.newaxis, :, 1]
-        distances_squared = dx * dx + dy * dy
-
-        # Update status of agents based on calculated distances using numpy's vectorized operations
-        transmission_occurs = (distances_squared < 100) & (np.random.random(size=distances_squared.shape) < self.beta)
-        newly_infected = transmission_occurs & np.logical_and(infectious_agents[:, np.newaxis], susceptible_agents[np.newaxis, :])
-        for agent, is_infected in zip(self.agents, newly_infected.any(axis=0)):
-            if is_infected:
-                agent.status = 'I'
-                agent.recovers_at = self.current_step + random.randint(100, 200)
+        # Calculate distances between each pair of agents using a KD-tree
+        tree = cKDTree(agent_positions)
+        pairs = tree.query_pairs(5)  # Find pairs of agents within distance 10
+        for i, j in pairs:
+            if infectious_agents[i] and susceptible_agents[j]:
+                self.agents[j].status = 'I'
+                self.agents[j].recovers_at = self.current_step + random.randint(100, 200)
 
         # Update status of infectious agents to recovered if recovery time has passed
         for agent in self.agents:
