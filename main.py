@@ -1,10 +1,12 @@
 import tkinter as tk
+from tkinter import ttk
 import random
 import matplotlib.cm as cm
 import numpy as np
 from scipy.spatial import KDTree
 from enum import Enum
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class Status(Enum):
     SUSCEPTIBLE = 'S'
@@ -22,14 +24,39 @@ class Agent:
             self.recovers_at = random.randint(100, 200)
 
 class SIRSimulatorUI:
-    def __init__(self, root, total_population=10000, initial_infectious=1, beta=1, num_time_steps=1000, exposure_distance=50):
+    def __init__(self, root, total_population=1000, initial_infectious=1, beta=1, num_time_steps=1000, exposure_distance=50):
         self.root = root
+        self.root.geometry("800x800")  # Width x Height
         self.root.title("Agent-Based SIR Model Simulator - Ball")
-        self.canvas = tk.Canvas(root, width=800, height=800, bg='white')
-        self.canvas.pack()
+        
+        # Main frame to hold all other frames
+        self.main_frame = ttk.Frame(root)
+        self.main_frame.pack(side=tk.LEFT, padx=20, pady=20, fill=tk.BOTH, expand=True)
+
+        # Frame for Tkinter widgets
+        self.frame = ttk.Frame(self.main_frame)
+        self.frame.grid(row=2, column=0, sticky='nsew')
+
+        # Canvas for simulation
+        self.canvas = tk.Canvas(self.main_frame, width=800, height=400, bg='white')
+        self.canvas.grid(row=1, column=0, sticky='nsew')
+
+        # Frame for Matplotlib graphs
+        self.fig, self.ax = plt.subplots(figsize=(8, 4))
+        self.canvas_fig = FigureCanvasTkAgg(self.fig, master=self.main_frame)
+        self.canvas_fig.get_tk_widget().grid(row=0, column=0, sticky='nsew')
+        
+        # Checkbox for social distancing
         self.social_distancing = tk.BooleanVar()
-        self.check_button = tk.Checkbutton(root, text="Social Distancing", variable=self.social_distancing)
+        self.check_button = tk.Checkbutton(self.frame, text="Social Distancing", variable=self.social_distancing)
         self.check_button.pack()
+
+        # Configure the grid system
+        self.main_frame.grid_rowconfigure(0, weight=1)
+        self.main_frame.grid_rowconfigure(1, weight=1)
+        self.main_frame.grid_rowconfigure(2, weight=1)
+        
+        # Generate random positions for agents
         self.positions = np.random.randint(0, 800, size=(total_population, 2))
         # Generate sociabilities from a normal distribution around 0.5
         self.sociabilities = np.random.normal(0.5, 0.1, size = total_population)
@@ -39,6 +66,7 @@ class SIRSimulatorUI:
         self.num_time_steps = num_time_steps
         self.current_step = 0
         self.exposure_distance = exposure_distance
+        self.history = []
         self.root.after(100, self.run_simulation)
 
     def agent_color(self, agent):
@@ -69,6 +97,10 @@ class SIRSimulatorUI:
         if self.current_step % 2 != 0:  # Update UI every 2 steps
             return
         self.canvas.delete("all")
+        
+        if self.current_step % 10 == 0:  # Update graphs every 10 steps
+            self.show_graphs() 
+
         counts = {'S': 0, 'I': 0, 'R': 0}
         
         agent_drawings = []
@@ -95,6 +127,7 @@ class SIRSimulatorUI:
         agent_statuses = np.array([agent.status for agent in self.agents])
         infectious_agents = agent_statuses == Status.INFECTED
         susceptible_agents = agent_statuses == Status.SUSCEPTIBLE
+        self.history.append((np.sum(susceptible_agents), np.sum(infectious_agents), np.sum(agent_statuses == Status.RECOVERED)))
 
         # Calculate distances between each pair of agents using a KD-tree
         tree = KDTree(agent_positions)
@@ -123,6 +156,19 @@ class SIRSimulatorUI:
         self.update_ui()
         self.current_step += 1
         self.root.after(40, self.run_simulation)
+
+    def show_graphs(self):
+        # Create SIR model plot with matplotlib
+        self.ax.clear()
+        history_arr = np.array(self.history)
+        self.ax.plot(history_arr[:, 0], label='Susceptible')
+        self.ax.plot(history_arr[:, 1], label='Infected')
+        self.ax.plot(history_arr[:, 2], label='Recovered')
+        self.ax.legend()
+        self.ax.set_title("SIR Model")
+        self.ax.set_xlabel("Time")
+        self.ax.set_ylabel("Population")
+        self.canvas_fig.draw()
 
 if __name__ == "__main__":
     root = tk.Tk()
