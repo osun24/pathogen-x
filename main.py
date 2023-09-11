@@ -8,6 +8,74 @@ from enum import Enum
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+class StartScreen:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Start Screen")
+        
+        # Set screen size and font size
+        window_width = 1920
+        window_height = 1080
+        self.root.geometry(f"{window_width}x{window_height}")
+
+        # Create a canvas for the start screen with background color
+        self.canvas = tk.Canvas(root, width=window_width, height=window_height, bg='#222')
+        self.canvas.pack()
+
+        # Create a label for the title
+        title_label = tk.Label(root, text="Agent-Based SIR Model Simulator - Ball", font=('Arial', 32, 'bold'), bg='#222', fg='white')
+        title_label.place(relx=0.5, rely=0.3, anchor='center')
+
+        # Create buttons with adjusted font size and custom colors
+        button_font = ('Arial', 18, 'bold')  # Adjust the font size and make it bold
+        about_button = tk.Button(root, text="About", command=self.show_about, font=button_font, bg='#3498db', fg='white')
+        start_button = tk.Button(root, text="Start Simulation", command=self.start_simulation, font=button_font, bg='#27ae60', fg='white')
+
+        about_button.place(relx=0.5, rely=0.45, anchor='center')
+        start_button.place(relx=0.5, rely=0.55, anchor='center')
+
+    def show_about(self):
+        # Open a new window for the About text
+        about_window = tk.Toplevel(self.root)
+        about_window.title("About")
+
+        # Create a text widget with adjusted font size and custom colors
+        text_font = ('Arial', 14)
+        about_text = tk.Text(about_window, wrap=tk.WORD, width=80, height=20, font=text_font, bg='#222', fg='white')
+        about_text.insert(tk.END, """
+        Our submission for the 2023 hackathon is an exciting and educational infectious disease transmission simulator. We embarked on this journey with a brainstorming session, eager to tackle a problem that would both engage the judges and offer a real-world solution.
+
+        Our initial discussions revolved around the choice of programming language and the concept of infectious disease transmission. As we delved deeper into the possibilities, it became clear that simulating disease transmission in a population was not only a fascinating challenge but also a relevant and important topic.
+
+        We contemplated various aspects, including the programming language, 3D modeling, and the user experience. Our team members had different preferences, but ultimately, we decided to pursue this endeavor in Python, a language familiar to one of our team members.
+
+        The core concept of our simulation revolves around allowing users to explore the dynamics of infectious disease transmission. We wanted to give them the ability to adjust various parameters such as the type of disease, population density, location of the initial infection, and the infectiousness of the disease (R0). This would enable users to see how different factors affect the spread of the disease over time.
+
+        One of the challenges we faced was making the simulation user-friendly while maintaining complexity and accuracy. Users would be able to select different settings and observe how the disease spreads within a simulated population. However, we needed to strike a balance between making it accessible and informative without overwhelming users with complexity.
+
+        In our discussions, we also considered alternative ideas, such as simulating ecosystem evolution, exploring problems like pollution and deforestation, or even simulating how a virus spreads throughout the human body. While these were intriguing ideas, we ultimately gravitated toward the infectious disease transmission simulator due to its real-world relevance and potential for educational value.
+
+        To make the simulator more engaging and informative, we discussed the possibility of implementing genetic algorithms to simulate the evolution of the virus itself. This could add an extra layer of complexity and realism to the simulation, allowing users to witness how viruses adapt and evolve over time.
+
+        As we fine-tuned our concept, we reached out to our team member, Alejandro Villa Floran, to gather his thoughts. Alejandro expressed his support for the infectious disease transmission simulation, noting that it could be a more straightforward and impactful project given our limited timeframe.
+
+        Our current prototype demonstrates basic disease transmission with random motion, high infectivity, and no recovery. We have started to implement features like social distancing and plan to incorporate the concept of R0 (reproduction number) to make the simulation even more realistic.
+
+        As we move forward, we're excited to refine our simulation, enhance the user experience, and create a tool that not only captures the judges' attention but also educates users about the dynamics of infectious diseases. We recognize that this project presents challenges, but we're committed to delivering a simulation that is both visually appealing and scientifically accurate.
+
+        We're also considering setting up a GitHub repository to collaborate on the development and track our progress as we work towards our hackathon submission. Together, we hope to create a valuable and impactful simulation that addresses a pressing real-world issue.
+        """)
+        about_text.pack()
+
+    def start_simulation(self):
+        # Close the start screen and start the simulation
+        self.root.destroy()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    start_screen = StartScreen(root)
+    root.mainloop()
+
 class Status(Enum):
     SUSCEPTIBLE = 'S'
     INFECTED = 'I'
@@ -193,8 +261,3 @@ class SIRSimulatorUI:
 
         self.pie_ax.set_title("Current Distribution")
         self.canvas_fig.draw()
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    ui = SIRSimulatorUI(root)
-    root.mainloop()
