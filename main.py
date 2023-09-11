@@ -33,7 +33,17 @@ class SIRSimulatorUI:
         # Main frame to hold all other frames
         self.main_frame = ttk.Frame(root)
         self.main_frame.pack(side=tk.LEFT, padx=0, pady=0, fill=tk.BOTH, expand=True)
-        
+
+        # Canvas for simulation
+        self.canvas = tk.Canvas(self.main_frame, width=800, bg='white')
+        self.canvas.grid(row = 0, column=0, sticky='nsew')
+
+        # Frame for Matplotlib graphs: 1x2 grid of subplots - one for SIR model, one for pie chart
+        self.fig, (self.ax, self.pie_ax) = plt.subplots(2, 1, figsize=(3, 7))
+        self.fig.subplots_adjust(hspace=0.75)  # Adjust the space between subplots
+        self.canvas_fig = FigureCanvasTkAgg(self.fig, master=self.main_frame)
+        self.canvas_fig.get_tk_widget().grid(row = 0, column=1, sticky='nsew')
+
         # Frame for Tkinter widgets
         self.frame = ttk.Frame(self.main_frame)
         
@@ -41,24 +51,13 @@ class SIRSimulatorUI:
         self.social_distancing = tk.BooleanVar()
         self.check_button = tk.Checkbutton(self.frame, text="Social Distancing", variable=self.social_distancing)
         self.check_button.pack()
-        
-        self.frame.grid(row=0, column=0, sticky='nsew')
-
-        # Canvas for simulation
-        self.canvas = tk.Canvas(self.main_frame, width=800, height=800, bg='white')
-        self.canvas.grid(row=1, column=0, sticky='nsew')
-
-        # Frame for Matplotlib graphs: 1x2 grid of subplots - one for SIR model, one for pie chart
-        self.fig, (self.ax, self.pie_ax) = plt.subplots(2, 1, figsize=(3, 7))
-        self.fig.subplots_adjust(hspace=0.75)  # Adjust the space between subplots
-        self.canvas_fig = FigureCanvasTkAgg(self.fig, master=self.main_frame)
-        self.canvas_fig.get_tk_widget().grid(row=1, column=1, sticky='nsew')
+        self.frame.grid(row=2, sticky='nsew')
 
         # Configure the grid system
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid_columnconfigure(1, weight=1)
-        self.main_frame.grid_rowconfigure(0, weight=1)
-        self.main_frame.grid_rowconfigure(1, weight=8)
+        self.main_frame.grid_rowconfigure(0, weight=8)
+        self.main_frame.grid_rowconfigure(1, weight=1)
         
         # Generate random positions for agents
         self.positions = np.random.randint(0, 800, size=(total_population, 2))
