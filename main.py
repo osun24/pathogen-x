@@ -261,3 +261,8 @@ class SIRSimulatorUI:
 
         self.pie_ax.set_title("Current Distribution")
         self.canvas_fig.draw()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    ui = SIRSimulatorUI(root)
+    root.mainloop()
