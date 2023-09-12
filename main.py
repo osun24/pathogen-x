@@ -57,7 +57,7 @@ class StartScreen:
 
         To make the simulator more engaging and informative, we discussed the possibility of implementing genetic algorithms to simulate the evolution of the virus itself. This could add an extra layer of complexity and realism to the simulation, allowing users to witness how viruses adapt and evolve over time.
 
-        As we fine-tuned our concept, we reached out to our team member, Alejandro Villa Floran, to gather his thoughts. Alejandro expressed his support for the infectious disease transmission simulation, noting that it could be a more straightforward and impactful project given our limited timeframe.
+        As we fine-tuned our concept, we reached out to our team member, Alejandro Villa Floran, to gather his thoughts. Alejandro expressed his support for the infectious disease transmission simulation, nothing that it could be a more straightforward and impactful project given our limited timeframe.
 
         Our current prototype demonstrates basic disease transmission with random motion, high infectivity, and no recovery. We have started to implement features like social distancing and plan to incorporate the concept of R0 (reproduction number) to make the simulation even more realistic.
 
