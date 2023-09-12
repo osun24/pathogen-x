@@ -1,5 +1,5 @@
 # pathogen-x
- Simulation of disease transmission in a population
+ Simulation of disease transmission in a population for CAMS CSC's 1-week Kickoff Hackathon.
 
 # References:
 1. Reproduction number of infectious disease models: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6002118/
@@ -13,9 +13,9 @@
 6. add mortality
 7. add city-specific data, e.g. LA
 8. replace beta with something more real-world, e.g. based on distance-time
-9. show SIR live plot
 
 # Added:
 1. ~~add time to recovery~~
 2. ~~color map of dot to show stage of infection~~
 3. ~~add "sociability" to adjust motion~~
+4. ~~show SIR live plot~~
